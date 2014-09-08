@@ -1,7 +1,7 @@
 #Cubone.js
 
 Cubone is a module that adds the concept of collection views to Backbone.
-Often in Backbone code you'll have a collection, loop over it and render
+Often in Backbone code you will iterate over a collection, rendering
 a view for every model in that collection.
 
 ```js
@@ -11,7 +11,7 @@ myCollection.each(function(model) {
 ```
 
 Using Cubone, create a CollectionView supplied with your collection and the view
-you would like it to render and the same functionality is given to you.
+you would like it to render. This produces the same result with added benefit.
 
 ```js
 new Backbone.CollectionView({
@@ -20,31 +20,35 @@ new Backbone.CollectionView({
 }).render();
 ```
 
-`view` needs to be a constructor function, while `collection` needs to be an instance of a collection.
+`view` needs to be a constructor function, while `collection` needs to be an instance of a Backbone collection.
 
 
 ##What's the benefit?
 
-The benefit is that Cubone will automatically listen for `add`, `remove` and `change` events on the collection and models,
-re-rendering itself.
+Cubone will re-render when your collection has changed or if any of the models inside the collection have changed.
 
-However, it's only going to re-render the specific model that was added, removed or changed so your entire collection
-doesn't re-render when something changes.
+When a model has changed, been added to or removed from your collection, Cubone is smart enough to only 
+re-render the view for that model.
 
-This keeps you from having to write a lot of boiler plate code or duplication of logic as it's fairly common
-to loop over a collection and render a view and to want it to re-render when that collection updates.
+This reduces the amount of boiler plate and potential duplication of logic. Iterating over a collection,
+rendering a view for each model and re-rendering when a change occurs is a fairly common pattern.
 
-##render
+## #render
 
 Calling `render` on a collection view will render the view you specified for every model in your collection.
+
 After calling `render` once, all following calls to render will only render models that have been marked as
-`dirty` in the collection view. A model is marked as dirty when it has newly been added to the collection belonging
-to the collection view, if a property on an existing model in the collection has changed, or if a call to `#expire`
-is made. This will cause the collection view to re-render.
+`dirty` in the collection view. A model is marked as dirty when:
 
-When a model is removed from the collection, it's view will be removed from the dom and render will be called again.
+* It has been added to the collection belonging to the collection view
+* A property on it has changed
+* A call to `#expire` has been made using it as an argument.
 
-##expire
+Any of these things happening will cause the collection view to re-render.
+
+When a model is removed from the collection, its view will be removed from the dom and render will be called again.
+
+## #expire
 
 Calling expire, passing in a single model will cause the collection view to re-render that specific model's view.
 
@@ -61,6 +65,56 @@ col_view.expire(model);
 
 Calling `expire` with no arguments will cause the collection view to re-render
 every model in its collection.
+
+##hook methods
+
+By default, when a change is made to the collection or model, `render` will be called on the
+collection view. However, hook methods have been provided in the event that you want
+different functionality when a model is added, removed or changed. This keeps you from
+having to overwrite the `render` function which would affect the behavior of all
+change, add and remove events.
+
+```js
+var CustomAddCollection = Backbone.CollectionView.extend({
+  added: function(model) {
+  }
+});
+
+var CustomChangeCollection = Backbone.CollectionView.extend({
+  changed: function(model) {
+  },
+  removed: function(model) {
+  }
+});
+
+var add_collection = new CustomAddCollection({
+  view: CustomView
+});
+
+var model = new Backbone.Model({ foo: 'bar' });
+add_collection.collection.add(model);
+// CustomAddCollection#added will get called instead of render
+
+model.set('foo', 'baz');
+// CustomAddCollection#render will get called
+
+add_collection.collection.remove(model);
+// CustomAddCollection#render will get called
+
+change_collection = new CustomChangeCollection({
+  view: CustomView
+});
+
+change_collection.collection.add(model);
+// CustomChangeCollection#render will get called
+
+model.set('foo', 'qux');
+// CustomChangeCollection#changed will get called instead of render
+
+change_collection.collection.remove(model);
+// CustomChangeCollection#removed will get called instead of render
+
+```
 
 ##defaults
 
