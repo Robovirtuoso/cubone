@@ -1,0 +1,13 @@
+{
+  "name": "cubone",
+  "version": "1.0.0",
+  "description": "Cubone is a Backbone extension adding CollectionViews",
+  "main": "lib/cubone.js",
+  "author": "Alex Williams",
+  "license": "MIT",
+  "devDependencies": {
+    "backbone": "^1.1.2",
+    "jquery": "^2.1.1",
+    "underscore": "^1.7.0"
+  }
+}
